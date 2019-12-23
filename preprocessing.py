@@ -91,3 +91,24 @@ def kth_nearest_neighbor(df, k):
     k_distance_matrix, _ = neighbors.kneighbors()
     kth_nearest_neighbors = list(map(lambda x: x[-1], k_distance_matrix))
     return kth_nearest_neighbors
+
+
+def highly_correlated_cols(df):
+    """
+
+    :param df: dataframe
+    :return: list
+        vraca listu kolona za koje postoje neke druge sa kojima su jako korelisane,
+        ukradena fja od Veljkovica
+    """
+    critical_columns = []
+    correlation_matrix = np.corrcoef(df, rowvar=False)
+
+    number_of_columns = correlation_matrix.shape[0]
+    for ith_column in range(number_of_columns):
+        for jth_column in range(ith_column + 1, number_of_columns):
+            if np.allclose(abs(correlation_matrix[ith_column][jth_column]), 1):
+                critical_columns.append(df.columns[ith_column])
+
+    return critical_columns
+
