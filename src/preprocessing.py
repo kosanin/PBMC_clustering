@@ -112,3 +112,54 @@ def highly_correlated_cols(df):
 
     return critical_columns
 
+
+def convert_columns_to_unit16(df):
+    """
+    :df: DataFrame
+    :return: DataFrame
+    Converts numeric columns to unit16 type; Ignores first column(assuming its id column)
+    """
+    id_column = df.columns[0]
+    id_column_data = df[id_column]
+    
+    # ova linija menja prosledjeni df
+    df.drop(columns=[id_column], inplace=True)
+    df = df.astype('uint16')
+    df.insert(0, column=id_column, value=id_column_data)
+    return df
+
+
+def drop_non_common_genes_and_get_genes_ids(df, reference_data):
+    """
+    :df: DataFrame
+        expected to have 'Index' or gene names column
+    :reference_data: DataFrame
+        output from GeneMetadataHandler.get_gene_lookup_columns method
+    :return: DataFrame
+        DataFrame without untracked genes(genes that are not in common_human_list) 
+        and with ENSG_ID or gene column added, depending on df
+    """
+    gene_lookup_column_name = reference_data.columns[1]
+    join_column = 'ENSG_ID' if df.columns[0] == 'Index' else gene_lookup_column_name
+    
+    # performing inner join to remove untracked genes(genes that are not in common_human_list) from df
+    return reference_data.join(other=df.set_index(df.columns[0])
+                              ,on=join_column
+                              ,how='inner')
+
+
+def concatenate_ensg_and_gene_columns(df, gene_lookup_column):
+    """
+    :df: DataFrame
+    :return: DataFrame
+        Constructs gene_id column by concatenating ENSG_ID and gene columns
+    """
+    df.insert(0, 'gene_id', df['ENSG_ID'] + "_" + df[gene_lookup_column])
+    df.drop(columns=['ENSG_ID', gene_lookup_column], inplace=True)
+    return df
+
+
+def rename_cells(columns, sample_id):
+    number_of_cells = columns.shape[0] - 1  # -1 za Index(gene) kolonu
+    return [columns[0]] + [sample_id + "_" + str(cell_number) for cell_number in range(1, number_of_cells + 1)]
+
