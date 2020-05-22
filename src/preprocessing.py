@@ -119,9 +119,10 @@ def convert_columns_to_unit16(df):
     :return: DataFrame
     Converts numeric columns to unit16 type; Ignores first column(assuming its id column)
     """
+    print("Converting numeric types to uint16...")
     id_column = df.columns[0]
     id_column_data = df[id_column]
-    
+
     # ova linija menja prosledjeni df
     df.drop(columns=[id_column], inplace=True)
     df = df.astype('uint16')
@@ -139,6 +140,7 @@ def drop_non_common_genes_and_get_genes_ids(df, reference_data):
         DataFrame without untracked genes(genes that are not in common_human_list) 
         and with ENSG_ID or gene column added, depending on df
     """
+    print("Dropping uncommon genes...")
     gene_lookup_column_name = reference_data.columns[1]
     join_column = 'ENSG_ID' if df.columns[0] == 'Index' else gene_lookup_column_name
     
@@ -154,12 +156,43 @@ def concatenate_ensg_and_gene_columns(df, gene_lookup_column):
     :return: DataFrame
         Constructs gene_id column by concatenating ENSG_ID and gene columns
     """
+    print("Creating key column gene_id")
     df.insert(0, 'gene_id', df['ENSG_ID'] + "_" + df[gene_lookup_column])
     df.drop(columns=['ENSG_ID', gene_lookup_column], inplace=True)
     return df
 
 
 def rename_cells(columns, sample_id):
+    print("Renaming cells...")
     number_of_cells = columns.shape[0] - 1  # -1 za Index(gene) kolonu
     return [columns[0]] + [sample_id + "_" + str(cell_number) for cell_number in range(1, number_of_cells + 1)]
+    
+    
+    
+def filter_by_percentage(df, p=1):
+    """
+    :param df: DataFrame
+    :param p: Positive Int
+    :return: DataFrame
+    returns DataFrame without columns that have less than p% non-zero values
+    """
+    columns_non_zero_percentages = (df != 0) \
+                                        .sum() \
+                                        .apply(lambda x: x / df.shape[1] * 100)
+    columns_to_keep = (columns_non_zero_percentages > p).values
+    return df.iloc[:, columns_to_keep]
+    
+    
+def filter_cells(df, sum_of_gene_exprs_lower_limit=1000, number_of_expressed_genes_lower_limit=500):
+    """
+    :param df: DataFrame
+    :sum_of_gene_exprs_lower_limit: Positive Integer
+    :number_of_expressed_genes_lower_limit: Positive Integer
+    """
+    number_of_expressed_genes_per_cell = (df != 0).sum(axis=1)
+    sum_of_gene_exprssions_per_cell = df.sum(axis=1)
+    cells_to_keep = ((sum_of_gene_exprssions_per_cell > sum_of_gene_exprs_lower_limit) & 
+                     (number_of_expressed_genes_per_cell > number_of_expressed_genes_lower_limit)).values
+    
+    return df.iloc[cells_to_keep, :]
 

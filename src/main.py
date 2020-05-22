@@ -1,5 +1,5 @@
 import numpy as np
-import visualization
+import src.visualization
 from sklearn.decomposition import PCA
 import pandas as pd
 import matplotlib.pyplot as plt
