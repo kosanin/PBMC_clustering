@@ -436,53 +436,29 @@ $\{10, 50, 124\}$.\footnote{Vrednost 124 dobijena je zaokruživanjem vrednosti $
 
 Na osnovu slika \ref{spektral_nmf_grp1_euklidsko}, \ref{spektral_nmf_grp1_cosine} i \ref{spektral_nmf_grp1_korelacija}, dobijaju se dosta slični rezultati za sve tri metrike. Jedino euklidsko rastojanje daje manji ukupni silueta koeficijent(\textbf{0.204863}) u odnosu na silueta koficijent dobijen kosinusnim rastojanjem(\textbf{0.444556}), odnosno silueta koficijent dobijen korišćenjem koeficijenta korelacije(\textbf{0.438462}) kao metrike rastojanja.
 
-Slike \ref{spektral_nmf_grp1_cosine_bar} i \ref{raspodela_celija} prikazuju vezu između datoteka i klastera. Tako na primer, klaster 3 čine većinom ćelije iz datoteke GSM2560249 i nekolicina ćelija iz datoteke GSM2560248. Slično važi i za klaster 1, gde je većina ćelija iz jedne datoteke, tj iz GSM2560249. Uzeti u obzir da se skale grafikona razlikuju. Opis datoteka je prikazan u tabeli \ref{group1_metadata}.
+Slike \ref{spektral_nmf_grp1_cosine_bar} i \ref{file_dist_spektral_nmf_grp1_cosine_bar} prikazuju vezu između datoteka i klastera. Tako na primer, klaster 3 čine većinom ćelije iz datoteke GSM2560249 i nekolicina ćelija iz datoteke GSM2560248. Slično važi i za klaster 1, gde je većina ćelija iz jedne datoteke, tj iz GSM2560249. Uzeti u obzir da se skale grafikona razlikuju. Opis datoteka je prikazan u tabeli \ref{group1_metadata}. 
 
+
+	
 \begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
 	\centering
-	\includegraphics[scale=0.4]{spektral_nmf_grp1_cosine_bar}
+	\includegraphics[width=\textwidth]{spektral_nmf_grp1_cosine_bar}	
 	\caption{Spektralno klasterovanje sa kosinusnim rastojanjem}
 	\label{spektral_nmf_grp1_cosine_bar}
-	%\vspace{1em}
+	\end{subfigure}
+	~
+	\begin{subfigure}{0.5\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{spectralClustering_10neighbors_cosineDistance_5clusters}
+	\caption{Raspodela ćelija po datotekama}
+	\label{file_dist_spektral_nmf_grp1_cosine_bar}
+	\end{subfigure}
 \end{figure}
 
 
-\begin{figure}[H]
-	
 
-	\begin{subfigure}[normla]{0.3\textwidth}
-		\includegraphics[scale=0.3]{bar_spektral_cosine_klaster0}
-		\caption{Raspodela ćelija po datotekama koje čine klaster 0}
-		\label{bar_spektral_cosine_klaster0}
-	\end{subfigure}
-	~
-	\begin{subfigure}[normla]{0.3\textwidth}
-		\includegraphics[scale=0.3]{bar_spektral_cosine_klaster1}
-		\caption{Raspodela ćelija po datotekama koje čine klaster 1}
-		\label{bar_spektral_cosine_klaster1}
-	\end{subfigure}
-	~
-	\begin{subfigure}[normla]{0.3\textwidth}
-		\includegraphics[scale=0.3]{bar_spektral_cosine_klaster2}
-		\caption{Raspodela ćelija po datotekama koje čine klaster 2}
-		\label{bar_spektral_cosine_klaster2}
-	\end{subfigure}
-	~
-	\begin{subfigure}[normla]{0.3\textwidth}
-		\includegraphics[scale=0.3]{bar_spektral_cosine_klaster3}
-		\caption{Raspodela ćelija po datotekama koje čine klaster 3}
-		\label{bar_spektral_cosine_klaster3}
-	\end{subfigure}
-	~
-	\begin{subfigure}[normla]{0.3\textwidth}
-		\includegraphics[scale=0.3]{bar_spektral_cosine_klaster4}
-		\caption{Raspodela ćelija po datotekama koje čine klaster 4}
-		\label{bar_spektral_cosine_klaster4}
-	\end{subfigure}	
-	\caption{Raspodela ćelija po datotekama za svaki klaster}
-	
-\label{raspodela_celija}
-\end{figure}
+
 
 
 
@@ -657,8 +633,66 @@ Ovim dolazimo do zaključka da algoritmi zasnovani na gustini nisu primenljivi n
 	%\vspace{1em}
 \end{figure}
 
+\section{Pregled dobijenih rezultata}
+
+S obzirom da su podaci nelabelirani, najviše smo se oslanjali na vizuelizaciju pomoću t-SNE kao na meru kvaliteta. Takođe, izračunali smo i silueta koeficijente za sve primenjene algoritme \ref{grp1_v1_sil} i \ref{grp1_v2_sil} \footnote{DBSCAN algoritam nije uzet u obzir jer nije uspeo da prepozna klastere}. Interesantno je da nijedan algoritam nema silueta koeficijent veći od $0.5$, ali isto tako nema algoritama koji imaju negativni silueta koeficijent, te je većina donekle uspela da prepozna neku strukturu u podacima. Za računanje silueta koeficijenta koristili smo dve metrike, i to euklidsko i kosinusno rastojanje. Ubedljivo najbolje rezultate dobijamo sa spektralnim klasterovanjem u kombinaciji sa kosinusnim rastojanjem ($sil\_koef = 0.445$).
+
+Za svaki od navedenih algoritama u tabelama \ref{grp1_v1_sil} i \ref{grp1_v2_sil} izračunate su i raspodele datoteka po klasterima, kao na primeru \ref{file_dist_spektral_nmf_grp1_cosine_bar} i svi podaci se mogu pronaći u direktorijumu $suplementary\_data$.
+
+\begin{center}
+\begin{table}[H]
+\caption{Silueta koeficijent nad prvom verzijom podataka}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lrrr}
+\toprule
+                           Algoritam &  Broj Klastera &  Silueta koef / Euklidsko &  Silueta koef / Kosinusno \\
+\midrule
+ Spektralno klast. / euklidsko rast. &              5 &                  0.204863 &                  0.439041 \\
+ Spektralno klast. / kosinusno rast. &              5 &                  0.199455 &                 \textbf{0.444556}  \\
+                           K-sredina &              4 &                  0.396459 &                  0.347671 \\
+                           K-sredina &              5 &                  0.397532 &                  0.346946 \\
+                           K-sredina &              6 &                  0.310075 &                  0.219312 \\
+                           K-sredina &              7 &                  0.153298 &                  0.184236 \\
+              Ward-ovo hijerarhijsko &              4 &                  0.339216 &                  0.382940 \\
+              Ward-ovo hijerarhijsko &              5 &                  0.339920 &                  0.382643 \\
+              Ward-ovo hijerarhijsko &              6 &                  0.261799 &                  0.228352 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\label{grp1_v1_sil}
+\end{table}
+\end{center}
 
 
+\begin{center}
+\begin{table}[H]
+\caption{Silueta koeficijent nad prvom verzijom podataka}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lrrr}
+\toprule
+                     Algoritam &  Broj Klastera &  Silueta koef / Euklidsko &  Silueta koef / Kosinusno \\
+\midrule
+ Spektralno klast. / euklidsko &              4 &                  0.176517 &                  0.279486 \\
+ Spektralno klast. / euklidsko &              5 &                  0.217971 &                  0.297713 \\
+ Spektralno klast. / euklidsko &              6 &                  0.224402 &                  0.300279 \\
+ Spektralno klast. / euklidsko &              7 &                  0.238307 &                  0.309415 \\
+ Spektralno klast. / euklidsko &              8 &                  0.241764 &                  0.292899 \\
+ Spektralno klast. / euklidsko &              9 &                  0.204278 &                  0.297957 \\
+                     K-sredina &              4 &                  0.239236 &                  0.314944 \\
+                     K-sredina &              5 &                  0.248646 &                  0.321342 \\
+                     K-sredina &              6 &                  0.248669 &                  0.314202 \\
+                     K-sredina &              7 &                  0.252884 &                  0.305646 \\
+                     K-sredina &              8 &                  0.225043 &                  0.326530 \\
+                     K-sredina &              9 &                  0.215614 &                  0.297955 \\
+        Ward-ovo hijerarhijsko &              4 &                  0.216909 &                  0.282551 \\
+        Ward-ovo hijerarhijsko &              5 &                  0.239302 &                  0.299316 \\
+        Ward-ovo hijerarhijsko &              6 &                  0.239470 &                  0.306849 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\label{grp1_v2_sil}
+\end{table}
+\end{center}
 
 
 
