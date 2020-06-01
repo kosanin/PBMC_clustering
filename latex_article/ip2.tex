@@ -268,7 +268,7 @@ Neka je matrica $\mathbf{X} \in \mathbb{R}^{p\times n}$ koja čini skup podataka
 \includegraphics[scale=0.6]{x_nmf}
 \end{figure}
 
-Kolone matrice $\mathbf{W}$ možemo interpretirati kao bazne vektore, dok kolone matrice $\mathbf{W}$ predstavljaju koordinate instanci skupa podataka u toj novoj bazi.
+Kolone matrice $\mathbf{W}$ možemo interpretirati kao bazne vektore, dok kolone matrice $\mathbf{H}$ predstavljaju koordinate instanci skupa podataka u toj novoj bazi.
 
 \begin{figure}[H]
 \centering
@@ -412,7 +412,6 @@ Osnovni algoritam spektralnog klasterovanja je sledeći \cite{von2007tutorial}:
 \KwInput{Skup podataka $D$, broj klastera $c$}
 Izračunati matricu povezanosti metodom k-najbližih suseda\;
 Izračunati Laplasijana $L$\;
-Izračunati prvih $c$ sopstvenih vektora $s_1, s_2, ... s_c$\;
 Izračunati prvih $c$ sopstvenih vektora $s_1, s_2, ... s_c$ matrice $L$. Neka je matrica $S \in \mathbb{R}^{n \times c}$ koja sadrži sopstvene vektore $s_1, s_2, ... s_c$ kao kolone. Tada je nova reprezentacija instance $a_i \in D, \forall i$ i-ta vrsta matrice $S$.\;
 Izvršiti klasterovanje metodom k-sredina nad novom reprezentacijom podataka\;
  \KwOutput{Klasterovani podaci}
@@ -633,6 +632,38 @@ Ovim dolazimo do zaključka da algoritmi zasnovani na gustini nisu primenljivi n
 	%\vspace{1em}
 \end{figure}
 
+\subsection{BIRCH}
+BIRCH algoritam se zasniva na CF drvetu. CF drvo je balansirano drvo koje sadrži faktor grananja B i prag T kao svoje parametre \cite{BIRCH}. Unutrašnji čvorovi drveta sadrže niz od najviše B elemenata. Unutrašnji čvor predstavlja klaster koji sadrži sve potklastere predstavljene njegovim elementima. Listovi sadrže pokazivače kako bi svi oni bili povezani radi efikasnijeg prolaska korz njih. Listovi su
+klasteri koji se sastoje od svih potklastera predstavljenih njihovim elementima. Prečnik mora biti manji od T, je uslov koji moraju zadovoljiti svi elementi u listu.
+
+Ovaj algoritam se sastoji od 4 faze, od kojih su neke opcione. U fazi 1 koja je obavezna prolazi se korz sve podatke i cilj je u memoriji konstruisati početno CF drvo. U ovoj fazi se konstruiše pregled podataka u memoriji tako da su gusto grupisane tačke podataka potklasteri dok se sve druge razbacane tačke uklanjaju kao greške. Prva faza obezbeđuje da će izračunavanja u sledećim fazama biti brža jer
+nisu potrebne nikakve ulazno izlazne operacije kao i to da je problem klasterovanja originalnih podataka smanjen na manji problem klasterovanja potklastera u elementima listova. Takođe, kasnija izračunavanja će biti preciznija jer je većina grešaka eleminisano.
+
+Faza 2 je opciona i u njoj se prolazi kroz elemente lista u inicijalnom CF drvetu, tako da se potklasteri koji su gusti grupišu u veće potklastere. U ovoj fazi dolazi i do dodatnog uklanjanja grešaka.
+
+U fazi 3 se koristi algoritam koji klasteruje elemente lista tako da se onemogući loše klasterovanje koje nastaje zbog lošeg redosleda ulaza i deljenjem zbog veličine stranice u memoriji.
+
+Faza 4 je opciona. Klasteri koji su dobijeni u fazi 3 su bitni jer se u fazi 4 koriste njihovi centroidi  kao semena za preraspodelu tačaka podataka prema najbližem semenu i tako nastaju novi skupovi klastera. U ovoj fazi je moguće odstraniti tačke koje predstavljaju greške.
+
+
+
+\begin{figure}[H]
+	\begin{subfigure}{0.5\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{birch_clustering}	
+	\caption{Klasteri dobijeni uz pomoć BIRCH algoritma nad verzijom jedan za 5 klastera.}
+	\label{birch_clustering}
+	\end{subfigure}
+	~
+	\begin{subfigure}{0.5\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{bar_birch_clustering}
+	\caption{Raspodela ćelija po datotekama}
+	\label{bar_birch_clustering}
+	\end{subfigure}
+	\caption{Na slici (a) prikazani su klasteri dobijeni BIRCH algoritmom sa parametrima n cluster = 5, branching factor = 30 i treshold = 0.2, dok na slici (b) raspored tako klasterovanih ćelija po datotekama.}
+\end{figure}
+
 \section{Pregled dobijenih rezultata}
 
 S obzirom da su podaci nelabelirani, najviše smo se oslanjali na vizuelizaciju pomoću t-SNE kao na meru kvaliteta. Takođe, izračunali smo i silueta koeficijente za sve primenjene algoritme \ref{grp1_v1_sil} i \ref{grp1_v2_sil} \footnote{DBSCAN algoritam nije uzet u obzir jer nije uspeo da prepozna klastere}. Interesantno je da nijedan algoritam nema silueta koeficijent veći od $0.5$, ali isto tako nema algoritama koji imaju negativni silueta koeficijent, te je većina donekle uspela da prepozna neku strukturu u podacima. Za računanje silueta koeficijenta koristili smo dve metrike, i to euklidsko i kosinusno rastojanje. Ubedljivo najbolje rezultate dobijamo sa spektralnim klasterovanjem u kombinaciji sa kosinusnim rastojanjem ($sil\_koef = 0.445$).
@@ -656,6 +687,9 @@ Za svaki od navedenih algoritama u tabelama \ref{grp1_v1_sil} i \ref{grp1_v2_sil
               Ward-ovo hijerarhijsko &              4 &                  0.339216 &                  0.382940 \\
               Ward-ovo hijerarhijsko &              5 &                  0.339920 &                  0.382643 \\
               Ward-ovo hijerarhijsko &              6 &                  0.261799 &                  0.228352 \\
+              BIRCH / branching factor=30 &         4 &                  0.347014 &                  0.386919 \\
+              BIRCH / branching factor=30 &         5 &                  0.347720 &                  0.386620  \\
+              BIRCH / branching factor=30 &         6 &                  0.266185 &                     0.240132 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -666,7 +700,7 @@ Za svaki od navedenih algoritama u tabelama \ref{grp1_v1_sil} i \ref{grp1_v2_sil
 
 \begin{center}
 \begin{table}[H]
-\caption{Silueta koeficijent nad prvom verzijom podataka}
+\caption{Silueta koeficijent nad drugom verzijom podataka}
 \begin{adjustbox}{width=1\textwidth}
 \begin{tabular}{lrrr}
 \toprule
@@ -687,6 +721,8 @@ Za svaki od navedenih algoritama u tabelama \ref{grp1_v1_sil} i \ref{grp1_v2_sil
         Ward-ovo hijerarhijsko &              4 &                  0.216909 &                  0.282551 \\
         Ward-ovo hijerarhijsko &              5 &                  0.239302 &                  0.299316 \\
         Ward-ovo hijerarhijsko &              6 &                  0.239470 &                  0.306849 \\
+        BIRCH / branching factor=30 &         5 &                  0.226926 &                  0.308484 \\
+        BIRCH / branching factor=30 &         6 &                  0.233039 &                  0.312238 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -794,6 +830,22 @@ U ovom radu primenili smo više algoritama za klasterovanje nad PBMC ćelijama. 
 \label{kmeans_grp1v2}
 \end{figure}
 
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}[normla]{0.5\textwidth}
+		\includegraphics[scale=0.3]{birch_cluster4_v2}
+		\caption{}
+		\label{spektral_nmf_grp1_euklidsko_A}
+	\end{subfigure}
+	~
+	\begin{subfigure}[normla]{0.4\textwidth}
+		\includegraphics[scale=0.3]{birch_cluster5_v2}
+		\caption{}
+		\label{spektral_nmf_grp1_euklidsko_B}
+	\end{subfigure}
+	\caption{BIRCH algoritam pirmenjen nad drugom verzijom prve grupe podataka za (a) 4 i (b) 5 klatera}
+\label{spektral_nmf_grp1_euklidsko}
+\end{figure}
 
 
 \begin{figure}[H]
@@ -868,6 +920,8 @@ U ovom radu primenili smo više algoritama za klasterovanje nad PBMC ćelijama. 
 \caption{Spektralno klasterovanja nad drugom verzijom prve grupe podataka za različit broj klastera}
 \label{hvg_nmf_spectral}
 \end{figure}
+
+
 
 \newpage
 \bibliographystyle{plain}
